@@ -2,7 +2,27 @@
 
 本工具不需要业务后端。`npm run build` 后把 `out/` 交给支持静态文件、HTTPS 和自定义域名的托管服务即可；对象存储加 CDN、静态页面托管或下方的 Nginx 都可作为部署形态。托管服务需要正确处理目录形式的 URL（例如 `/salary-calculator/` 对应 `salary-calculator/index.html`）和 `404.html`。Node.js 只在构建时需要，线上不必运行工资计算 API 或数据库。
 
-本文件只描述部署步骤；**本仓库尚未部署到生产环境**。请先完成 [部署前检查清单](PRE_DEPLOY_CHECKLIST.md)。国内 ECS 面向大陆公开访问时，网站所有者应核实并完成适用的 ICP 备案等手续。下文 `your-domain.example`、服务器用户名和路径均是文档占位符，不能原样用于正式站点。
+2026-10-11 已将 v0.2.0 **预览版**部署到网站所有者授权的上海 ECS，并通过公网手机与桌面浏览器共 10 项验收。当前使用 HTTP/IP 访问，禁止搜索引擎索引；尚未配置正式域名和 HTTPS。实际访问地址、实例和验收记录保存在不纳入 Git 的 `release/DEPLOYMENT_REPORT.md`。正式发布前请完成 [部署前检查清单](PRE_DEPLOY_CHECKLIST.md)。国内 ECS 面向大陆公开访问时，网站所有者应核实并完成适用的 ICP 备案等手续。下文 `your-domain.example`、服务器用户名和路径均是文档占位符，不能原样用于正式站点。
+
+## 当前 ECS 预览服务
+
+- 使用阿里云 Linux 发行版软件仓库的 Nginx；没有启动应用后端或数据库。
+- 独立 systemd 服务为 `paytools-nginx`，已启用开机启动；宝塔面板、现有容器不由此服务管理。
+- 发布目录为 `/srv/paytools/releases/20261011-2145-v0.2.0`，`/srv/paytools/current` 指向它。
+- 主配置为 `/srv/paytools/config/nginx.conf`，服务文件为 `/etc/systemd/system/paytools-nginx.service`；仓库 `deploy/` 保存预览配置模板。
+- 预览监听 TCP 80。确认安全组仅关联目标实例后新增了一条 TCP 80 入站规则；没有修改原有规则，443 尚未开放。
+- HTML 不缓存，哈希资源长期缓存，返回真实 404；全部响应带 `X-Robots-Tag: noindex, nofollow`，robots 禁止抓取。
+- 访问日志关闭，错误日志为 `/var/log/paytools/error.log`。工资金额只在浏览器中计算。
+
+检查与重载当前服务：
+
+```bash
+systemctl status paytools-nginx
+nginx -t -c /srv/paytools/config/nginx.conf
+systemctl reload paytools-nginx
+```
+
+后续切换发布目录仍按第 3 节操作，但配置检查须带上 `-c /srv/paytools/config/nginx.conf`，重载对象使用 `paytools-nginx`。首次部署没有旧版本，撤销预览可执行 `systemctl disable --now paytools-nginx`；不要停止宝塔或现有容器。配置正式域名时需要重新构建静态文件、去掉服务器的预览 noindex 响应头、配置证书和 HTTP 跳转，再验收 robots、sitemap、canonical 与 HTTPS。
 
 ## 1. 本地构建与验收
 
