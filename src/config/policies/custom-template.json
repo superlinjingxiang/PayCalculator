@@ -1,0 +1,16 @@
+{
+  "id": "custom-2026-manual",
+  "city": "custom",
+  "effectiveFrom": "2026-01-01",
+  "effectiveTo": "2026-12-31",
+  "verifiedAt": "2026-10-11",
+  "status": "manual-unverified",
+  "sourceUrls": {},
+  "socialBase": null,
+  "housingBase": null,
+  "personalRates": null,
+  "unemploymentRateStatus": "manual",
+  "housingRateOptions": null,
+  "housingRounding": "cent-half-up",
+  "notes": "用户自行填写全部缴费基数和个人费率；不套用任何地区上下限。"
+}

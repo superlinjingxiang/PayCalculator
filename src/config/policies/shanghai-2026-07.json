@@ -1,0 +1,20 @@
+{
+  "id": "shanghai-2026-07",
+  "city": "shanghai",
+  "effectiveFrom": "2026-07-01",
+  "effectiveTo": "2027-06-30",
+  "verifiedAt": "2026-10-11",
+  "status": "verified-with-assumption",
+  "sourceUrls": {
+    "socialBase": "https://shanghai.chinatax.gov.cn/tax/bsfw/nszx/hdfk/202609/t481435.html",
+    "housingBase": "https://www.shzfgjj.cn/html/newxxgk/zcwj/gfxwj/228478.html",
+    "personalRates": "https://www.shanghai.gov.cn/nw17239/20260913/37398bbb63ad4fffa64e0b9deb0f6afc.html"
+  },
+  "socialBase": { "minimum": "7546", "maximum": "37731" },
+  "housingBase": { "minimum": "2740", "maximum": "37731" },
+  "personalRates": { "pension": "8", "medical": "2", "unemployment": "0.5" },
+  "unemploymentRateStatus": "inferred-continuity",
+  "housingRateOptions": ["5", "6", "7"],
+  "housingRounding": "whole-yuan-half-up",
+  "notes": "2026年7月起有效。普通住房公积金个人缴存比例须按单位实际选择填报；失业保险个人0.5%按连续适用推定。"
+}

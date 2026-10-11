@@ -1,0 +1,20 @@
+{
+  "id": "shanghai-2025-07",
+  "city": "shanghai",
+  "effectiveFrom": "2025-07-01",
+  "effectiveTo": "2026-06-30",
+  "verifiedAt": "2026-10-11",
+  "status": "verified-with-assumption",
+  "sourceUrls": {
+    "socialBase": "https://rsj.sh.gov.cn/tgsgg_17341/20250918/t0035_1435637.html",
+    "housingBase": "https://www.shzfgjj.cn/html/newxxgk/zcjd/228183.html",
+    "personalRates": "https://www.shanghai.gov.cn/nw17239/20251211/6a00e933de0347acbc172518d6bbab79.html"
+  },
+  "socialBase": { "minimum": "7460", "maximum": "37302" },
+  "housingBase": { "minimum": "2690", "maximum": "37302" },
+  "personalRates": { "pension": "8", "medical": "2", "unemployment": "0.5" },
+  "unemploymentRateStatus": "inferred-continuity",
+  "housingRateOptions": ["5", "6", "7"],
+  "housingRounding": "whole-yuan-half-up",
+  "notes": "2026年1月至6月沿用2025年7月起有效基数。失业保险个人0.5%按官方前后资料持续适用推定，须以实际扣缴为准。"
+}
