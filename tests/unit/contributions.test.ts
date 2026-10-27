@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { computeMonthlyContributions } from "@/lib/calculation/contributions";
+import { computeMonthlyContributionDetails, computeMonthlyContributions } from "@/lib/calculation/contributions";
 import { getPolicyForMonth } from "@/lib/policy/loader";
 
 describe("personal contributions", () => {
@@ -15,6 +15,25 @@ describe("personal contributions", () => {
       unemployment: "37.30",
       housing: "188.00",
     });
+  });
+
+  it("returns entered and effective bases when policy limits are applied", () => {
+    const result = computeMonthlyContributionDetails(getPolicyForMonth("shanghai", 2026, 6), {
+      socialInsuranceBase: "1000",
+      housingFundBase: "99999",
+      rates: { pension: "8", medical: "2", unemployment: "0.5", housing: "7" },
+    });
+    expect(result.socialInsuranceBase).toEqual({
+      entered: "1000.00",
+      effective: "7460.00",
+      adjustedBy: "minimum",
+    });
+    expect(result.housingFundBase).toEqual({
+      entered: "99999.00",
+      effective: "37302.00",
+      adjustedBy: "maximum",
+    });
+    expect(result.rates).toEqual({ pension: "8", medical: "2", unemployment: "0.5", housing: "7" });
   });
 
   it("uses new July minima and whole-yuan personal housing rounding", () => {

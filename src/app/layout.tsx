@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import AdConsent, { AdPreferencesButton } from "@/components/AdConsent";
+import PageViews from "@/components/PageViews";
+import Analytics from "@/components/Analytics";
 import { getSiteOrigin } from "@/lib/seo";
 import "./globals.css";
 
@@ -10,6 +13,7 @@ export const metadata: Metadata = {
   },
   description: "按累计预扣法估算中国大陆居民个人 2026 年工资个税与到手金额，逐月查看五险一金和政策依据。",
   applicationName: "PayTools",
+  referrer: "no-referrer",
   icons: { icon: "/favicon.svg" },
   robots: { index: Boolean(getSiteOrigin()), follow: Boolean(getSiteOrigin()) },
 };
@@ -47,11 +51,16 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               <Link href="/about/">关于本站</Link>
               <Link href="/privacy/">隐私说明</Link>
               <Link href="/methodology/">计算方法</Link>
+              <Link href="/shanghai-salary-calculator/">上海工资计算</Link>
               <Link href="/policy-sources/">政策来源</Link>
+              <AdPreferencesButton />
             </nav>
           </div>
           <div className="container footer-bottom">估算结果不等于单位实际工资条或个人所得税年度汇算。规则资料核对时间：2026-10-11。</div>
         </footer>
+        <AdConsent />
+        <PageViews />
+        <Analytics />
       </body>
     </html>
   );

@@ -1,9 +1,10 @@
 import Link from "next/link";
+import AdSlot from "@/components/AdSlot";
 import SalaryCalculator from "@/components/SalaryCalculator";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata(
-  "2026 工资税后计算器｜全国省市个税与到手工资",
+  "2026工资到手多少？逐月税后工资估算",
   "选择中国大陆省市，输入税前月薪，按累计预扣法查看 2026 年每月个税、五险一金个人缴费和全年到手估算。上海自动政策已核对，其他城市手动填写地方参数。",
   "/",
 );
@@ -15,7 +16,7 @@ export default function HomePage() {
         <div className="hero-copy">
           <p className="eyebrow"><span className="eyebrow-dot" /> 中国大陆居民工资薪金 · 2026</p>
           <h1>你的工资，<br /><em>到手多少？</em></h1>
-          <p className="hero-lead">从税前到税后，逐月拆开计算。看清个人缴费、累计预扣个税和每个月的实发估算。</p>
+          <p className="hero-lead">按2026累计预扣法，拆开12个月税后工资。看清个人缴费、每月个税和实发估算。</p>
           <div className="hero-points" aria-label="工具特点">
             <span>12 个月明细</span><span>政策按月匹配</span><span>本地计算</span>
           </div>
@@ -44,7 +45,7 @@ export default function HomePage() {
           <article className="info-card"><span className="card-number">02</span><h3>再算累计个税</h3><p>预扣个税按本单位当年累计收入与扣除计算。随着累计应纳税所得额变化，月份之间的税款也会变化。</p></article>
           <article className="info-card"><span className="card-number">03</span><h3>核对政策版本</h3><p>全国省市都可选择。上海已核实的上下半年基数分开处理；其他地区的个人比例和基数由你根据当地政策填写。</p></article>
         </div>
-        <div className="source-strip"><span>规则与边界均有说明</span><Link href="/policy-sources/">查看政策来源 <span aria-hidden="true">→</span></Link></div>
+        <div className="source-strip"><Link href="/shanghai-salary-calculator/">上海税后工资与7月调基</Link><Link href="/policy-sources/">查看政策来源 <span aria-hidden="true">→</span></Link></div>
         <div className="home-editorial">
           <section aria-labelledby="home-policy-heading">
             <h2 id="home-policy-heading">2026 年采用哪些规则？</h2>
@@ -63,6 +64,7 @@ export default function HomePage() {
           </section>
         </div>
       </section>
+      <div className="container"><AdSlot placement="content-footer" /></div>
     </main>
   );
 }

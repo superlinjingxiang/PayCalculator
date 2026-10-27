@@ -6,6 +6,8 @@ const rule = parseNationalPolicy(nationalPolicy);
 
 export const NATIONAL_POLICY_ID = rule.id;
 export const BASIC_DEDUCTION_MONTHLY = rule.basicDeductionMonthly;
+export const NATIONAL_POLICY_SOURCE_URL = rule.sourceUrl;
+export const NATIONAL_POLICY_VERIFIED_AT = rule.verifiedAt;
 
 export interface TaxBracket {
   upper: string | null;

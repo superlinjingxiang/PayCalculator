@@ -1,5 +1,5 @@
-The province and city names/codes in `mainland-regions.json` are derived from
-[`@province-city-china/province` and `@province-city-china/city` version 9.0.0](https://github.com/uiwjs/province-city-china),
+The province, city, and district names/codes used by the region selector are derived from
+[`@province-city-china/province`, `@province-city-china/city`, and `@province-city-china/area` version 9.0.0](https://github.com/uiwjs/province-city-china),
 published 2026-10-09 and sourced by that project from China's National Geographical Names Database.
 This list is for region selection only. It does not certify any social insurance or housing fund policy.
 

@@ -1,0 +1,43 @@
+{
+  "today": "2026-10-27",
+  "claims": [
+    {
+      "claim": "[1] 2026查询已有多城逐月累计预扣竞品",
+      "class": "competitive",
+      "pub_date": "2026-10-21",
+      "recheck": "2027-01-21",
+      "stale": false
+    },
+    {
+      "claim": "[3] 上海分期基数已有竞品",
+      "class": "competitive",
+      "pub_date": "2026-10-13",
+      "recheck": "2027-01-13",
+      "stale": false
+    },
+    {
+      "claim": "[5] 百度历史申请说明不能确认2026门槛",
+      "class": "policy",
+      "pub_date": "2020-09-27",
+      "recheck": "2020-12-27",
+      "stale": true
+    },
+    {
+      "claim": "[12] 阿里云离线日志可下载近30天",
+      "class": "technical",
+      "pub_date": "2026-07-21",
+      "recheck": "2026-10-21",
+      "stale": true
+    },
+    {
+      "claim": "[23] sendBeacon是POST，true仅表示排队",
+      "class": "technical",
+      "pub_date": "2026-10-25",
+      "recheck": "2027-01-25",
+      "stale": false
+    }
+  ],
+  "stale_count": 2,
+  "earliest_recheck": "2020-12-27",
+  "no_window_classes": []
+}

@@ -1,5 +1,5 @@
 import type { CityCode } from "@/lib/policy/schemas";
-import type { ContributionBreakdown } from "./contributions";
+import type { ContributionBreakdown, MonthlyContributionDetails } from "./contributions";
 
 export interface ContributionRatesInput {
   pension?: string;
@@ -31,6 +31,7 @@ export interface MonthlyResult {
   gross: string;
   contributionsByType: ContributionBreakdown;
   contributionsTotal: string;
+  contributionDetails: MonthlyContributionDetails | null;
   basicDeduction: string;
   additionalDeduction: string;
   otherDeduction: string;
@@ -40,12 +41,15 @@ export interface MonthlyResult {
   currentTax: string;
   takeHome: string;
   policyVersion: string;
+  policyVerifiedAt: string;
+  policySources: { label: string; url: string }[];
 }
 
 export interface SalaryResult {
   months: MonthlyResult[];
   grossTotal: string;
   personalContributionsTotal: string;
+  additionalDeductionsTotal: string;
   taxWithheldTotal: string;
   takeHomeTotal: string;
   warnings: string[];

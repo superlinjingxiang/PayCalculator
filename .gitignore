@@ -7,3 +7,5 @@ test-results/
 *.tsbuildinfo
 .env.local
 release/
+__pycache__/
+*.pyc

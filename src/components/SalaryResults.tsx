@@ -4,12 +4,19 @@ import { useEffect, useRef, useState } from "react";
 import type { SalaryInput, SalaryResult } from "@/lib/calculation/types";
 import { salaryCsv } from "@/lib/export/salary-csv";
 import styles from "./SalaryCalculator.module.css";
+import SalaryBreakdownChart from "./SalaryBreakdownChart";
 
 type Props = { result: SalaryResult; mode: SalaryInput["mode"]; regionName: string };
 
 function money(value: string): string {
   const [integer, fraction] = value.split(".");
   return `${integer.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}.${fraction ?? "00"}`;
+}
+
+function adjustmentLabel(adjustedBy: "minimum" | "maximum" | null): string | null {
+  if (adjustedBy === "minimum") return "已按缴费下限调整";
+  if (adjustedBy === "maximum") return "已按缴费上限调整";
+  return null;
 }
 
 export default function SalaryResults({ result, mode, regionName }: Props) {
@@ -35,14 +42,17 @@ export default function SalaryResults({ result, mode, regionName }: Props) {
       <span className={styles.resultBadge}>{taxOnly ? "个税模式" : "含个人缴费"}</span>
     </div>
     {taxOnly && <p className={styles.taxOnlyNotice}>仅算个税，未扣五险一金</p>}
-    {!taxOnly && regionName !== "上海市" && <p className={styles.taxOnlyNotice}>{regionName} 的地方缴费参数未自动核实；以下结果按你填写的基数与比例估算，需与当地政策和工资条核对。</p>}
+    {!taxOnly && regionName.startsWith("上海市") && <p className={styles.taxOnlyNotice}>上海公积金 7% 与工资联动基数是可修改的估算预设；本次计算采用表单中确认的参数，请核对单位申报值。</p>}
+    {!taxOnly && !regionName.startsWith("上海市") && <p className={styles.taxOnlyNotice}>{regionName} 的地方缴费参数未自动核实；以下结果按你填写的基数与比例估算，需与当地政策和工资条核对。</p>}
     <dl className={styles.summaryGrid}>
       <div><dt>全年税前工资</dt><dd><output aria-label="全年税前工资">{money(result.grossTotal)}</output><small>元</small></dd></div>
       <div><dt>全年个人缴费</dt><dd><output aria-label="全年个人缴费">{money(result.personalContributionsTotal)}</output><small>元</small></dd></div>
-      <div><dt>全年预扣个税</dt><dd><output aria-label="全年预扣个税">{money(result.taxWithheldTotal)}</output><small>元</small></dd></div>
+      <div><dt>全年专项附加扣除</dt><dd><output aria-label="全年专项附加扣除">{money(result.additionalDeductionsTotal)}</output><small>元</small></dd></div>
+      <div className={styles.taxCard}><dt>全年预扣个税</dt><dd><output aria-label="全年预扣个税">{money(result.taxWithheldTotal)}</output><small>元</small></dd></div>
       <div className={styles.takeHomeCard}><dt>{taxOnly ? "全年扣税后余额" : "估算全年实发"}</dt><dd><output aria-label={taxOnly ? "全年扣税后余额" : "估算全年实发"}>{money(result.takeHomeTotal)}</output><small>元</small></dd></div>
     </dl>
     <p className={styles.equation}>税前工资 − 个人缴费 − 预扣个税 = {taxOnly ? "扣税后余额" : "估算实发"}。{taxOnly && "该余额不代表实际到手工资。"}</p>
+    <SalaryBreakdownChart result={result} mode={mode} />
 
     <div className={styles.monthHeader}>
       <div><h3>单月摘要</h3><p>切换月份查看累计预扣与个人缴费组成。</p></div>
@@ -64,14 +74,46 @@ export default function SalaryResults({ result, mode, regionName }: Props) {
       </dl>
     </div>}
     <p className={styles.policyVersion}>本月适用规则：{month.policyVersion}</p>
+    <section className={styles.calculationBasis} aria-labelledby="calculation-basis-heading">
+      <div className={styles.basisHeader}>
+        <h4 id="calculation-basis-heading">本月计算依据</h4>
+        <span>规则核对：{month.policyVerifiedAt}</span>
+      </div>
+      {month.contributionDetails && <dl className={styles.basisGrid}>
+        <div>
+          <dt>社保计费基数</dt>
+          <dd>
+            {money(month.contributionDetails.socialInsuranceBase.entered)} → <output aria-label="本月社保有效基数">{money(month.contributionDetails.socialInsuranceBase.effective)}</output> 元
+            {adjustmentLabel(month.contributionDetails.socialInsuranceBase.adjustedBy) && <small>{adjustmentLabel(month.contributionDetails.socialInsuranceBase.adjustedBy)}</small>}
+          </dd>
+        </div>
+        <div>
+          <dt>公积金计费基数</dt>
+          <dd>
+            {money(month.contributionDetails.housingFundBase.entered)} → <output aria-label="本月公积金有效基数">{money(month.contributionDetails.housingFundBase.effective)}</output> 元
+            {adjustmentLabel(month.contributionDetails.housingFundBase.adjustedBy) && <small>{adjustmentLabel(month.contributionDetails.housingFundBase.adjustedBy)}</small>}
+          </dd>
+        </div>
+      </dl>}
+      {month.contributionDetails && <p className={styles.rateLine}>
+        个人费率：养老 {month.contributionDetails.rates.pension}% · 医疗 {month.contributionDetails.rates.medical}% · 失业 {month.contributionDetails.rates.unemployment}% · 公积金 {month.contributionDetails.rates.housing}%
+      </p>}
+      <p className={styles.sourceLine}>
+        官方来源：
+        {month.policySources.map((source, index) => <span key={source.url}>
+          {index > 0 && " · "}
+          <a href={source.url} target="_blank" rel="noreferrer">{source.label}</a>
+        </span>)}
+      </p>
+    </section>
 
     <div className={styles.tableHeading}><div><h3>12 个月明细</h3><p>窄屏可横向滑动表格。下载文件仅在本地生成，请妥善保管。</p></div><button type="button" className={styles.exportButton} onClick={downloadCsv}>下载 CSV 明细</button></div>
     <div className={styles.tableScroll} tabIndex={0} aria-label="12 个月工资明细，可横向滚动">
       <table>
         <caption>2026 年逐月工资、个人缴费和累计预扣明细，单位：元</caption>
-        <thead><tr><th scope="col">月份</th><th scope="col">税前工资</th><th scope="col">养老</th><th scope="col">医疗</th><th scope="col">失业</th><th scope="col">公积金</th><th scope="col">个人缴费合计</th><th scope="col">基本减除</th><th scope="col">专项附加扣除</th><th scope="col">其他依法扣除</th><th scope="col">免税收入</th><th scope="col">累计应税所得</th><th scope="col">累计已预扣</th><th scope="col">本月预扣</th><th scope="col">{taxOnly ? "扣税后余额" : "估算实发"}</th><th scope="col">适用规则</th></tr></thead>
+        <thead><tr><th scope="col">月份</th><th scope="col">税前工资</th><th scope="col">社保有效基数</th><th scope="col">公积金有效基数</th><th scope="col">养老</th><th scope="col">医疗</th><th scope="col">失业</th><th scope="col">公积金</th><th scope="col">个人缴费合计</th><th scope="col">基本减除</th><th scope="col">专项附加扣除</th><th scope="col">其他依法扣除</th><th scope="col">免税收入</th><th scope="col">累计应税所得</th><th scope="col">累计已预扣</th><th scope="col">本月预扣</th><th scope="col">{taxOnly ? "扣税后余额" : "估算实发"}</th><th scope="col">适用规则</th></tr></thead>
         <tbody>{result.months.map((entry) => <tr key={entry.month}>
-          <th scope="row">{entry.month} 月</th><td>{money(entry.gross)}</td><td>{money(entry.contributionsByType.pension)}</td><td>{money(entry.contributionsByType.medical)}</td><td>{money(entry.contributionsByType.unemployment)}</td><td>{money(entry.contributionsByType.housing)}</td><td>{money(entry.contributionsTotal)}</td><td>{money(entry.basicDeduction)}</td><td>{money(entry.additionalDeduction)}</td><td>{money(entry.otherDeduction)}</td><td>{money(entry.exemptIncome)}</td><td>{money(entry.cumulativeTaxable)}</td><td>{money(entry.cumulativeWithholding)}</td><td>{money(entry.currentTax)}</td><td>{money(entry.takeHome)}</td><td>{entry.policyVersion}</td>
+          <th scope="row">{entry.month} 月</th><td>{money(entry.gross)}</td><td>{entry.contributionDetails ? money(entry.contributionDetails.socialInsuranceBase.effective) : "—"}</td><td>{entry.contributionDetails ? money(entry.contributionDetails.housingFundBase.effective) : "—"}</td><td>{money(entry.contributionsByType.pension)}</td><td>{money(entry.contributionsByType.medical)}</td><td>{money(entry.contributionsByType.unemployment)}</td><td>{money(entry.contributionsByType.housing)}</td><td>{money(entry.contributionsTotal)}</td><td>{money(entry.basicDeduction)}</td><td>{money(entry.additionalDeduction)}</td><td>{money(entry.otherDeduction)}</td><td>{money(entry.exemptIncome)}</td><td>{money(entry.cumulativeTaxable)}</td><td>{money(entry.cumulativeWithholding)}</td><td>{money(entry.currentTax)}</td><td>{money(entry.takeHome)}</td><td>{entry.policyVersion}</td>
         </tr>)}</tbody>
       </table>
     </div>

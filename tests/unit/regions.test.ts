@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { areaOptions } from "@/lib/areas";
 import { isDirectMunicipality, MAINLAND_PROVINCES, regionName } from "@/lib/regions";
 
 describe("mainland region selector data", () => {
@@ -15,5 +16,11 @@ describe("mainland region selector data", () => {
     expect(isDirectMunicipality("330000")).toBe(false);
     expect(regionName("310000", "310000")).toBe("上海市");
     expect(regionName("330000", "330100")).toBe("浙江省 · 杭州市");
+  });
+
+  it("provides district options for municipalities and selected cities", () => {
+    expect(areaOptions("310000", "310000").some((area) => area.name === "浦东新区")).toBe(true);
+    expect(areaOptions("330000", "330100").some((area) => area.name === "西湖区")).toBe(true);
+    expect(regionName("330000", "330100", "西湖区")).toBe("浙江省 · 杭州市 · 西湖区");
   });
 });

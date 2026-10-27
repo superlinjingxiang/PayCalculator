@@ -1,0 +1,2 @@
+# Preserve anonymous aggregates before raw logs expire. Runs on Python 3.6+.
+17 * * * * root umask 077; /usr/bin/python3 /usr/local/lib/paytools/pv-report.py --log-dir /var/log/paytools/pv --state /var/lib/paytools/pv/state.json --collection-start-file /var/lib/paytools/pv/collection-start --environment preview >/dev/null

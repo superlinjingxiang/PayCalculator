@@ -28,6 +28,14 @@ describe("2026 salary estimation", () => {
     }));
     expect(result.months[5].contributionsTotal).toBe("1400.00");
     expect(result.months[6].contributionsTotal).toBe("1750.00");
+    expect(result.months[5].contributionDetails?.socialInsuranceBase.effective).toBe("8000.00");
+    expect(result.months[6].contributionDetails?.socialInsuranceBase.effective).toBe("10000.00");
+    expect(result.months[5].policyVerifiedAt).toBe("2026-10-11");
+    expect(result.months[5].policySources.map((source) => source.label)).toEqual([
+      "社保缴费基数",
+      "公积金缴存基数",
+      "个人缴费比例",
+    ]);
     expect(result.personalContributionsTotal).toBe("18900.00");
     expect(result.taxWithheldTotal).toBe("513.00");
     expect(result.takeHomeTotal).toBe("76587.00");
@@ -63,6 +71,20 @@ describe("2026 salary estimation", () => {
     expect(result.taxWithheldTotal).toBe("1080.00");
     expect(result.takeHomeTotal).toBe("94920.00");
     expect(result.warnings.join(" ")).toContain("未扣除五险一金");
+  });
+
+  it("applies every cumulative deduction before selecting the withholding bracket", () => {
+    const result = calculateSalary(taxOnly({
+      additionalDeductionsMonthly: "1000",
+      otherDeductionsMonthly: "100",
+      exemptIncomeMonthly: "200",
+    }));
+    expect(result.months[0]).toMatchObject({
+      cumulativeTaxable: "1700.00",
+      currentTax: "51.00",
+    });
+    expect(result.months[11].cumulativeTaxable).toBe("20400.00");
+    expect(result.taxWithheldTotal).toBe("612.00");
   });
 
   it("deducts 5,000 yuan only for each employment month starting in May", () => {

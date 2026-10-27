@@ -1,7 +1,7 @@
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata(
-  "计算方法",
+  "累计预扣个税怎么算？每月工资一样个税为何变化",
   "了解工资税后估算中的累计预扣个税、上海五险一金基数与逐月计算假设。",
   "/methodology/",
 );
@@ -11,7 +11,7 @@ export default function MethodologyPage() {
     <main id="main-content" className="content-page">
       <header className="page-intro">
         <p>计算说明 · 2026 年居民工资薪金</p>
-        <h1>计算方法</h1>
+        <h1>工资一样，为什么每个月个税不一样？</h1>
         <p>
           本工具按月计算个人缴费，再按累计预扣法估算个税。结果以填写的基数、比例和扣除为前提，
           不能替代单位工资条、扣缴申报或个人所得税年度汇算。
@@ -36,7 +36,7 @@ export default function MethodologyPage() {
         </p>
         <p>
           上海普通住房公积金的个人比例可为 5%、6% 或 7%，具体档位由单位确定，使用前需由用户确认。
-          工具不把 7% 当成所有人的默认比例，也不自动把月工资当成申报基数。
+          工具起始预填7%，并把基数与输入工资联动，均为可修改的估算预设，不代表单位申报值。请按工资条确认两项基数并选择正确比例。
           <a href="https://www.shzfgjj.cn/html/newxxgk/zcwj/gfxwj/228051.html">上海公积金 2025 年度通知</a>
           ；<a href="https://www.shzfgjj.cn/html/newxxgk/zcwj/gfxwj/228478.html">2026 年度通知</a>。
         </p>
@@ -70,13 +70,20 @@ export default function MethodologyPage() {
       </section>
 
       <section aria-labelledby="example-heading">
-        <h2 id="example-heading">一个纯税务示例</h2>
+        <h2 id="example-heading">跨税档时，每月个税如何变化？</h2>
+        <p>纯税务示例：每月工资10,000元，个人缴费及其他扣除均为0，1月入职。前7个月累计应税所得每月增加5,000元，第7月累计35,000元，税额1,050元，当月扣150元。第8月累计40,000元，按10%税率减2,520元速算扣除，累计税额1,480元，减已扣1,050元，当月扣430元。第9月累计税额1,980元，减已扣1,480元，当月扣500元。可在工具选择“仅算个税”复算；不表示实际可免缴社保公积金。</p>
         <p>
           假设全年在同一单位工作，每月工资 8,000 元，个人缴费、专项附加扣除及其他扣除均为 0：
           年累计收入为 96,000 元，累计基本减除费用为 60,000 元，应纳税所得额为 36,000 元，
           对应 3% 累计预扣率，全年预扣税额为 1,080 元。此例只演示税务算法，
           不表示实际工作中可以忽略法定个人社保和公积金。
         </p>
+      </section>
+
+      <section id="start-month" aria-labelledby="start-month-heading">
+        <h2 id="start-month-heading">年中入职个税怎么算？</h2>
+        <p>本工具从所选入职月份累计本单位当年的收入和每月5,000元基本减除费用。例如7月入职、每月10,000元且无其他扣除，本单位到12月累计收入60,000元，基本减除30,000元，应税所得30,000元、累计预扣900元。入职前在其他单位的收入与已扣税未合并；多单位、更正及年度汇算请核对实际申报。</p>
+        <p><a href="/salary-calculator/">打开累计预扣个税计算器</a>，或使用<a href="/shanghai-salary-calculator/">上海缴费规则估算</a>。</p>
       </section>
 
       <section aria-labelledby="limitations-heading">

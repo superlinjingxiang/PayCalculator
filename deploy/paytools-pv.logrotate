@@ -1,0 +1,15 @@
+/var/log/paytools/pv/pageviews.log {
+    daily
+    rotate 30
+    maxage 30
+    missingok
+    nocompress
+    dateext
+    create 0640 nginx nginx
+    sharedscripts
+    postrotate
+        if [ -f /run/paytools-nginx.pid ]; then
+            kill -USR1 "$(cat /run/paytools-nginx.pid)"
+        fi
+    endscript
+}

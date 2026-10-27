@@ -1,9 +1,10 @@
 import Link from "next/link";
+import AdSlot from "@/components/AdSlot";
 import SalaryCalculator from "@/components/SalaryCalculator";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata(
-  "2026 税后工资计算器｜全国省市与每月个税明细",
+  "2026累计预扣个税计算器｜12个月税后工资明细",
   "选择中国大陆省市，按累计预扣法计算 2026 年逐月个税和税后工资。上海提供已核实分期参数，其他城市手动填写地方缴费参数。",
   "/salary-calculator/",
 );
@@ -13,7 +14,7 @@ export default function CalculatorPage() {
     <main id="main-content" className="container tool-page">
       <header className="page-intro">
         <p className="eyebrow">工资计算器 / 2026</p>
-        <h1>2026 税后工资计算器</h1>
+        <h1>2026累计预扣个税计算器</h1>
         <p>选择全国省市，输入本单位发放的工资和扣除信息，查看累计预扣个税、个人缴费与每月到手估算。上海提供已核对的地方分期规则，其余地区需按当地政策填写基数和比例。计算在浏览器内完成。</p>
       </header>
       <SalaryCalculator />
@@ -41,8 +42,9 @@ export default function CalculatorPage() {
             <p>上海已公布的社保和普通公积金基数上下限在 7 月切换；相同的输入基数可能适用不同上限或下限，进而改变个人缴费。</p>
           </section>
         </div>
-        <p className="inline-sources">查看 <Link href="/methodology/">公式与示例</Link>、<Link href="/policy-sources/">适用政策和原始链接</Link>。请以实际工资条和税务申报为准。</p>
+        <p className="inline-sources">查看 <Link href="/shanghai-salary-calculator/">上海税后工资与7月调基</Link>、<Link href="/methodology/">公式与示例</Link>、<Link href="/policy-sources/">适用政策和原始链接</Link>。请以实际工资条和税务申报为准。</p>
       </section>
+      <AdSlot placement="content-footer" />
     </main>
   );
 }

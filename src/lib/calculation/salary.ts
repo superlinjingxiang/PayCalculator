@@ -1,8 +1,13 @@
 import Decimal from "decimal.js";
 import { getPolicyForMonth } from "@/lib/policy/loader";
 import type { CityCode, MonthPolicy, PersonalRates } from "@/lib/policy/schemas";
-import { computeMonthlyContributions, type ContributionBreakdown } from "./contributions";
-import { BASIC_DEDUCTION_MONTHLY, NATIONAL_POLICY_ID } from "./brackets";
+import { computeMonthlyContributionDetails, type ContributionBreakdown } from "./contributions";
+import {
+  BASIC_DEDUCTION_MONTHLY,
+  NATIONAL_POLICY_ID,
+  NATIONAL_POLICY_SOURCE_URL,
+  NATIONAL_POLICY_VERIFIED_AT,
+} from "./brackets";
 import { moneyString, ZERO } from "./money";
 import type { ContributionRatesInput, MonthlyResult, SalaryInput, SalaryResult } from "./types";
 import { calculateCumulativeTax } from "./withholding-tax";
@@ -10,6 +15,11 @@ import { calculateCumulativeTax } from "./withholding-tax";
 const MAX_AMOUNT = new Decimal("999999999.99");
 const EMPTY_CONTRIBUTIONS: ContributionBreakdown = {
   pension: "0.00", medical: "0.00", unemployment: "0.00", housing: "0.00",
+};
+const POLICY_SOURCE_LABELS: Record<string, string> = {
+  socialBase: "社保缴费基数",
+  housingBase: "公积金缴存基数",
+  personalRates: "个人缴费比例",
 };
 
 export class SalaryValidationError extends Error {
@@ -140,6 +150,14 @@ function ratesForMonth(
   return { ...socialRates, housing: month <= 6 ? userRates.housingH1! : userRates.housingH2! };
 }
 
+function policySources(policy: MonthPolicy | null): { label: string; url: string }[] {
+  if (!policy) return [{ label: "国家税务总局", url: NATIONAL_POLICY_SOURCE_URL }];
+  return Object.entries(policy.sourceUrls).map(([key, url]) => ({
+    label: POLICY_SOURCE_LABELS[key] ?? key,
+    url,
+  }));
+}
+
 export function calculateSalary(input: SalaryInput): SalaryResult {
   const valid = validateInput(input);
   const detailed = input.mode === "detailed";
@@ -176,13 +194,14 @@ export function calculateSalary(input: SalaryInput): SalaryResult {
     const employed = month >= input.startMonth;
     const policy = detailed ? getPolicyForMonth(input.cityCode, 2026, month) : null;
     const gross = employed ? valid.grossByMonth[month - 1] : ZERO;
-    const breakdown = employed && detailed && policy
-      ? computeMonthlyContributions(policy, {
+    const contributionDetails = employed && detailed && policy
+      ? computeMonthlyContributionDetails(policy, {
           socialInsuranceBase: month >= 7 ? valid.socialBaseH2 ?? valid.socialBase! : valid.socialBase!,
           housingFundBase: month >= 7 ? valid.housingBaseH2 ?? valid.housingBase! : valid.housingBase!,
           rates: ratesForMonth(input.cityCode, policy, valid.rates, month),
         })
-      : { ...EMPTY_CONTRIBUTIONS };
+      : null;
+    const breakdown = contributionDetails?.contributions ?? { ...EMPTY_CONTRIBUTIONS };
     const contribution = Object.values(breakdown).reduce(
       (sum, value) => sum.plus(value), ZERO,
     );
@@ -219,6 +238,7 @@ export function calculateSalary(input: SalaryInput): SalaryResult {
       gross: moneyString(gross),
       contributionsByType: breakdown,
       contributionsTotal: moneyString(contribution),
+      contributionDetails,
       basicDeduction: moneyString(basic),
       additionalDeduction: moneyString(additional),
       otherDeduction: moneyString(employed ? valid.other : ZERO),
@@ -228,12 +248,15 @@ export function calculateSalary(input: SalaryInput): SalaryResult {
       currentTax: moneyString(currentTax),
       takeHome: moneyString(takeHome),
       policyVersion: policy?.id ?? NATIONAL_POLICY_ID,
+      policyVerifiedAt: policy?.verifiedAt ?? NATIONAL_POLICY_VERIFIED_AT,
+      policySources: policySources(policy),
     });
   }
   return {
     months,
     grossTotal: moneyString(grossTotal),
     personalContributionsTotal: moneyString(contributionsTotal),
+    additionalDeductionsTotal: moneyString(cumulativeAdditional),
     taxWithheldTotal: moneyString(cumulativeWithholding),
     takeHomeTotal: moneyString(takeHomeTotal),
     warnings: [...warnings],

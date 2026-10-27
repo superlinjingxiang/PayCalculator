@@ -1,0 +1,14 @@
+[
+  {"claim":"[1] 2026查询已有多城逐月累计预扣竞品","class":"competitive","pub_date":"2026-10-21"},
+  {"claim":"[3] 上海分期基数已有竞品","class":"competitive","pub_date":"2026-10-13"},
+  {"claim":"[5] 百度历史申请说明不能确认2026门槛","class":"policy","pub_date":"2020-09-27"},
+  {"claim":"[7] 360当前注册表收备案并验证域名","class":"policy","pub_date":null},
+  {"claim":"[8] Nginx支持自定义location访问日志","class":"technical","pub_date":null},
+  {"claim":"[9] Nginx支持透明GIF响应","class":"technical","pub_date":null},
+  {"claim":"[10] 百度SPA开关和手动PV不得重复","class":"technical","pub_date":null},
+  {"claim":"[12] 阿里云离线日志可下载近30天","class":"technical","pub_date":"2026-07-21"},
+  {"claim":"[13] PV是页面打开次数，UV是去重访客","class":"definition","pub_date":null},
+  {"claim":"[20] 大陆CDN域名需备案，两云商一致","class":"policy","pub_date":null},
+  {"claim":"[22] 两云商支持CDN集中日志分析架构","class":"technical","pub_date":null},
+  {"claim":"[23] sendBeacon是POST，true仅表示排队","class":"technical","pub_date":"2026-10-25"}
+]
