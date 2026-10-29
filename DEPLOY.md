@@ -2,7 +2,19 @@
 
 ## 成熟统计切换（Umami 3.4.1）
 
-工资工具仍静态导出、本地计算；新增统计应用/数据库由独立部署管理。官方镜像锁定 `ghcr.io/umami-software/umami:3.4.1`（无v，不用latest），PostgreSQL仅容器内可达，应用后台仅loopback。不得改既有容器、新购SLS/RUM或开放新公网端口。设置PRIVATE_MODE=1并关闭遥测、外部更新/MCP，私有凭证不进入仓库、`NEXT_PUBLIC_*`或前端。
+工资工具仍静态导出、本地计算；新增统计应用/数据库由独立部署管理。Umami 3.4.1使用官方镜像站的固定摘要 `docker.umami.is/umami-software/umami@sha256:e69d1a7932e9dab0fc523edc7be1f3a53f3c261f57856fc2167ae74a8fc022e8`；PostgreSQL 15官方ECR镜像固定摘要 `sha256:54e0dd8e8cddcdbb9156c2486eed5a43eccb7214d7c6828097d41ce049fb3984`。数据库仅内部网络可达，应用后台仅通过宿主机loopback提供。不得改既有容器、新购SLS/RUM或开放新公网端口。设置PRIVATE_MODE=1并关闭遥测、外部更新/MCP，私有凭证不进入仓库、`NEXT_PUBLIC_*`或前端。
+
+2026-10-28已完成现有ECS的私有服务和前端切换，真实浏览/入库、改密、隔离代理、备份恢复与app重启均通过；用户本机后台通道仍单独验收。Docker26的internal网络不会建立`-p`映射，故使用显式内部子网和固定容器IP，由已有`systemd-socket-proxyd`监听`127.0.0.1:3001`转发。相关源码为 `deploy/install-umami.sh`、`deploy/paytools-umami.{socket,service}`。子网必须先核对与现有路由/网络不重叠；本项目服务器已核实，不应把该固定网段直接套用其他机器。安装脚本仅用于不存在同名容器/密钥的首次安装，失败残留须检查并复用原数据，不能重跑初始化或换掉数据库密码。
+
+备份脚本 `scripts/backup-umami.sh` 实际安装在 `/usr/local/lib/paytools/`，调度源码为 `deploy/paytools-umami-backup.cron`（上海03:15），首次安装器会安装并验证。备份目录0700、文件0600；同一导出快照生成源网站UUID/网站/事件/会话清单，归档与SHA256落盘后，最后原子发布manifest作为唯一完成标记。中断残留dump不会遮住上次完成备份。保留14天及最新成功备份；`scripts/verify-umami-restore.sh` 将最新完成归档恢复到本次成功创建的唯一临时库，严格比对源清单后清理，绝不覆盖生产库。数据库当前不自动清除历史统计，备份与生产数据都在同一ECS磁盘：已验证可恢复不等于具备异地容灾；本轮未开通付费存储。
+
+### 实际恢复步骤（人工维护窗口）
+
+演练脚本不会替换生产。真正恢复时，先停止前端采集并停止本任务Umami应用和回环代理，保留当前数据库卷、受限env/secret、镜像摘要和Nginx配置；能导出当前数据时另做一份保护备份。不要重跑首次安装器，也不要删除旧卷或改其它容器。
+
+选择目标日期的完整manifest、dump和sha256文件，核对摘要、预期网站UUID与行数。在现有数据库容器中新建独立恢复库，用 `pg_restore --exit-on-error` 恢复后，执行manifest对应的清单SQL比对；历史归档可按相同步骤人工选择，校验失败就保留现场并停止，不能直接覆盖当前库。
+
+保留原受限`app.env`副本，只把数据库名指向新恢复库，沿用原数据库用户、口令、APP_SECRET与TWO_FACTOR_ENCRYPTION_KEY，并用记录的同一版本参数重建**仅本任务应用容器**。这些秘密不在数据库dump里，缺失时不可把dump称为完整灾难恢复材料。验证私有heartbeat、管理员登录、既有PV明细及一次受控新采集后，再恢复前端采集；不要将受控流量当自然访客。若验证失败，停止新应用，恢复原env数据库名和原应用参数，保留新旧库供检查；确认旧heartbeat、登录与原PV后才称回退成功。清理旧库另行人工决定。
 
 前端只有下列公开构建参数；改动须重建：
 
@@ -14,13 +26,13 @@ NEXT_PUBLIC_ADS_ENABLED=false
 NEXT_PUBLIC_SITE_URL=
 ```
 
-公开代理仅精确匹配 `/analytics/script.js` → `/script.js` 和 `/analytics/api/send` → `/api/send`，其余后台/API路径不可公网访问。两路由关闭普通访问日志；转发前剥离Cookie、Authorization、Referer，不将任意客户端转发头当作可信IP。站点referrer元数据为no-referrer；追踪器上报配置credentials=omit，但脚本GET本身可能附带同源Cookie，须用真实请求核验代理边界。数据库/后台保留实际字段与匿名IP处理说明，不宣称完全不处理IP。服务启动、账号改密、资源实测、备份恢复及安全私有通道由云端部署验收确认；本节不是部署成功证明。
+公开代理仅精确匹配 `/analytics/script.js` → `/script.js` 和 `/analytics/api/send` → `/api/send`，其余后台/API路径不可公网访问。两路由关闭普通访问日志，显式清空`$args`；转发前剥离Cookie、Authorization、Referer，不将任意客户端转发头当作可信IP。文档HTTP响应头与referrer元数据均为no-referrer，避免HTML预加载早于meta策略；追踪器上报配置credentials=omit，但脚本GET本身可能附带同源Cookie，上游已由真实Nginx隔离回显验证剥离。数据库/后台保留实际字段与匿名IP处理说明，不宣称完全不处理IP。可用 `scripts/verify-umami-proxy.sh` 对已部署片段进行隔离Nginx验收，该脚本不重载现有站点。
 
 采用[锁定源码](https://raw.githubusercontent.com/umami-software/umami/v3.4.1/src/tracker/index.ts)核对的手动 `umami.track(object)`，禁用自动初始化/自动PV；前端只发送固定7页面的路径、静态标题、主机、语言、屏幕及搜索来源根域名。脚本延迟队列保持导航时归属，不重复播放；无自动点击、回放、identify、自定义ID、查询或表单字段。浏览器测试使用随MIT许可证保存的锁定源码夹具，不以手写SDK冒充真实接口。
 
 先验收真实首页、站内往返、后退/前进和刷新各1次，工资输入、计算、CSV不增加；检查payload与Cookie/Referer等请求头，后台API和登录界面可核对页面明细后才关闭旧PV的新采集。旧匿名PV历史保留，不倒灌已有21次测试信号，也不把两个数据源合计。Umami开始时间以实际新采集为准。
 
-后台使用阿里云官方Session Manager端口转发，不公开后台端口；账号尚未开启时，先部署并验收服务，再由用户开启该安全能力，不擅自代改、不声称后台已经可访问。前端回滚只需清空provider/UUID并重新构建；保留数据库和私有备份。HTTP/IP预览继续noindex，正式域名/备案及广告审批仍未完成。
+后台使用阿里云官方Session Manager加密通道与Windows OpenSSH的回环转发，不公开后台端口；账号开关已按用户2026-10-28“你开启一下”的明确授权启用，未改变投递设置。Workbench发布版转发尚不可用，ali-instance-cli直接portforward默认监听所有接口，均未作为交付通道；改用官方stdio SSH代理，既有公钥60秒临时认证和专用可信host key。实际localhost登录、Views=5、通道关闭/重开已验收；下次查看/关闭及凭据位置见 [后台使用说明](docs/ANALYTICS.md)。前端回滚只需清空provider/UUID并重新构建；保留数据库和私有备份。HTTP/IP预览继续noindex，正式域名/备案及广告审批仍未完成。
 
 本工具不需要业务后端。`npm run build` 后把 `out/` 交给支持静态文件、HTTPS 和自定义域名的托管服务即可；对象存储加 CDN、静态页面托管或下方的 Nginx 都可作为部署形态。托管服务需要正确处理目录形式的 URL（例如 `/salary-calculator/` 对应 `salary-calculator/index.html`）和 `404.html`。Node.js 只在构建时需要，线上不必运行工资计算 API 或数据库。
 

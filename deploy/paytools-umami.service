@@ -1,0 +1,17 @@
+[Unit]
+Description=PayTools private Umami TCP relay
+Requires=paytools-umami.socket docker.service
+After=paytools-umami.socket docker.service
+PartOf=docker.service
+
+[Service]
+EnvironmentFile=/srv/paytools/analytics/relay.env
+ExecStart=/usr/lib/systemd/systemd-socket-proxyd ${UMAMI_UPSTREAM}
+DynamicUser=yes
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+CapabilityBoundingSet=
+Restart=on-failure
+RestartSec=2

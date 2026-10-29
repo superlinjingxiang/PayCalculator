@@ -1,0 +1,2 @@
+CRON_TZ=Asia/Shanghai
+15 3 * * * root /usr/local/lib/paytools/backup-umami.sh >> /srv/paytools/analytics/backup.log 2>&1

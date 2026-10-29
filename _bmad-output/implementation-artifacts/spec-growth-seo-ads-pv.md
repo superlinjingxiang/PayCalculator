@@ -3,7 +3,7 @@ title: '搜索增长、国内广告与真实浏览量'
 type: 'feature'
 created: '2026-10-27'
 status: 'in-review'
-execution_state: 'paused-by-user'
+execution_state: 'waiting-domain-and-ad-approval'
 route: 'dispatch'
 review_loop_iteration: 0
 context: ['AGENTS.md', '_bmad-output/growth-2026-10-27/design.md']

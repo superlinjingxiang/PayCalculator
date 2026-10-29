@@ -1,5 +1,23 @@
 # 测试与交付核验
 
+## 2026-10-29 收尾复查
+
+三层评审的问题均已逐项裁定并修复，定向复核通过。补强后真实PostgreSQL fixture三项全部通过：记录2条正常恢复、schema-only归档因数据不一致拒绝、无完成manifest的新dump被忽略；实际生产备份/恢复严格比对网站1/事件5/会话1。首次安装前缀8项通过，仅执行安全截断前缀，验证env/卷/网络/容器残留和并发锁，不执行安装主体或真实Docker。真实Nginx2项通过，旧referrer策略变异确实失败、恢复后通过。
+
+本机PS5和PS7各验证目录/文件Everyone显式授权移除；第二端口不覆盖旧PID、错实例/错地域不覆盖host key均通过。今天复查原cqp healthy，Umami/DB无OOM、管理/秘密路径404、临时数据库和测试监听0；上海03:15自动备份成功，源事件仍5条（均为受控测试）。前端源未新增改动，沿用2026-10-27的115项Vitest及Chrome验证，不把它们写成今天重跑。
+
+临时测试目录清理被自动审批拒绝（blocked by policy），保留的是无凭据文本/脚本，详情见 `_bmad-output/growth-2026-10-28/access-negative-tests.md`；未改用其它路径或工具绕过。
+
+## 2026-10-28 Umami真实部署
+
+官方锁定摘要镜像已运行，默认密码拒绝、新随机密码登录与预留website UUID均实测通过。普通Chrome UA模拟的真实浏览验收共5次，数据库与私有后台API从0增至5，页面明细首页2、方法页3；输入/计算/CSV每一步均不增加，query/hash/工资和来源查询未入库。这5次为受控测试，Umami的1访客/1访问也只是匿名会话统计，不代表自然真人。默认HeadlessChrome首次测试被Umami机器人过滤、未入库；保留该失败记录，未关闭机器人过滤。
+
+实际Nginx隔离测试发现旧`proxy_pass ...?`未清掉查询，已改为`set $args ""`并在修复后的实际片段验证43项检查全部通过：成功路径/方法、查询与Cookie/Authorization/Referer剥离、发送路由可信IP覆盖及额外头清除、缓存、404/405和Set-Cookie隐藏。片段SHA256为 `88c95addbe50ce5dbe2d94b0f3bc992d4c80ea560d0f0b48b5abdc0d7916114c`。实际页面响应头改为no-referrer后，Chrome脚本和发送均无Referer；脚本GET可带同源测试Cookie，发送不带。
+
+数据库65024字节备份已校验摘要并恢复到隔离临时库，验证网站1/事件5后清理临时库。app实际重启后固定IP、私有heartbeat与事件5保持，未重启Docker或原cqp服务；所有新容器无OOM/重启循环，原cqp healthy。app约235MiB、数据库约15MiB，主机仍有约1.05GiB可用；这是本轮小流量实测，未做压力或整机重启测试。
+
+Workbench v1.0.1/v1.0.4实际forward均返回未提供；官方ali直接转发因监听所有接口被guard停下。用户明确授权后开启SessionManager，改为OpenSSH仅127.0.0.1监听+官方stdio代理，复用现有公钥的60秒临时认证，严格校验可信host key。真实Chrome后台登录和网站Overview均通过，显示Views=5；已打开用户可操作的Chrome窗口。关闭后本机监听消失，重开后heartbeat200；无公网端口或安全组变更。PowerShell5健康检查采用UseBasicParsing，避免解析器/交互提示妨碍完成判断。
+
 ## 2026-10-27 Umami前端接入
 
 按 `spec-mature-analytics.md` 实施，SDK接口核对官方v3.4.1源码及tracker-functions文档。新增2文件7项Vitest覆盖启用条件、路径/来源边界、延迟快照、重复渲染和失败；针对改动的ESLint、typecheck通过。未配置构建的Chrome桌面/移动2项通过（6项启用场景条件跳过），确认无Umami脚本/请求。启用构建以官方锁版本tracker源码夹具运行，Chrome桌面/移动6项通过（2项未配置场景条件跳过），覆盖首屏/导航/后退/前进/刷新各一次、工资/计算/CSV不增加、静态title、剔除query/hash/来源查询、请求无Cookie/Referer、脚本延迟归属与失败后计算/CSV。夹具仅去除TS类型并替换官方构建占位符，未用自制SDK模拟接口。

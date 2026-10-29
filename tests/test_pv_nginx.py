@@ -119,6 +119,11 @@ class PageViewNginxTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         return json.loads(result.stdout)
 
+    def test_homepage_disables_referrer_header(self):
+        status, headers = self.request("GET", "/")
+        self.assertEqual(status, 200)
+        self.assertEqual(headers.get("Referrer-Policy"), "no-referrer")
+
     def test_real_producer_filters_identifiers_and_survives_rotation_reopen(self):
         endpoints = {
             "home": "/", "calculator": "/salary-calculator/", "shanghai": "/shanghai-salary-calculator/",
